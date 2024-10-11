@@ -57,10 +57,11 @@ func afterCallback(dbInfo DatabaseInfo) func(db *gorm.DB) {
 
 		defer span.End()
 
-		span.Tag(tracing.TagDBStatement, db.Statement.SQL.String())
-		if config.CollectParameter && len(db.Statement.Vars) > 0 {
-			span.Tag(tracing.TagDBSqlParameters, argsToString(db.Statement.Vars))
+		sql := db.Statement.SQL.String()
+		if len(db.Statement.Vars) > 0 && len(sql) > 0 {
+			sql = db.Dialector.Explain(sql, db.Statement.Vars...)
 		}
+		span.Tag(tracing.TagDBStatement, sql)
 		if db.Statement.Error != nil {
 			span.Error(db.Statement.Error.Error())
 		}

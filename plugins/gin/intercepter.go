@@ -18,14 +18,14 @@
 package gin
 
 import (
+	"bytes"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/apache/skywalking-go/plugins/core/operator"
 	"github.com/apache/skywalking-go/plugins/core/tracing"
-
 	"github.com/gin-gonic/gin"
+	"io"
+	"net/http"
+	"strings"
 )
 
 type ContextInterceptor struct {
@@ -56,6 +56,18 @@ func (h *ContextInterceptor) BeforeInvoke(invocation operator.Invocation) error 
 		collectRequestHeaders(s, context.Request.Header)
 	}
 
+	// 记录请求入参
+	raw, _ := context.GetRawData()
+	context.Request.Body = io.NopCloser(bytes.NewBuffer(raw))
+	s.Log("请求参数", string(limit(raw, 1024*2)))
+
+	// 记录响应结果
+	context.Writer = CustomWriter{
+		context.Writer,
+		bytes.NewBuffer([]byte{}),
+		1024 * 128,
+	}
+
 	invocation.SetContext(s)
 	return nil
 }
@@ -70,6 +82,7 @@ func (h *ContextInterceptor) AfterInvoke(invocation operator.Invocation, result 
 	if len(context.Errors) > 0 {
 		span.Error(context.Errors.String())
 	}
+	span.Log("响应结果", context.Writer.(CustomWriter).Data.String())
 	span.End()
 	return nil
 }
@@ -102,4 +115,28 @@ func collectRequestHeaders(span tracing.Span, requestHeaders http.Header) {
 	}
 
 	span.Tag(tracing.TagHTTPHeaders, tagValue)
+}
+
+func limit(in []byte, limit uint) []byte {
+	l := uint(len(in))
+	if l <= limit {
+		return in
+	}
+	return in[:limit]
+}
+
+type CustomWriter struct {
+	gin.ResponseWriter
+	Data  *bytes.Buffer
+	Limit uint
+}
+
+func (w CustomWriter) Write(b []byte) (int, error) {
+	w.Data.Write(limit(b, w.Limit))
+	return w.ResponseWriter.Write(b)
+}
+
+func (w CustomWriter) WriteString(s string) (int, error) {
+	w.Data.WriteString(string(limit([]byte(s), w.Limit)))
+	return w.ResponseWriter.WriteString(s)
 }

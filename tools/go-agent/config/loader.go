@@ -99,6 +99,7 @@ type GRPCReporterTLS struct {
 type Plugin struct {
 	Config   PluginConfig `yaml:"config"`
 	Excluded StringValue  `yaml:"excluded"`
+	Include  StringValue  `yaml:"include"`
 }
 
 type Correlation struct {

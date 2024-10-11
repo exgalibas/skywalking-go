@@ -94,10 +94,21 @@ func (i *Instrument) CouldHandle(opts *api.CompileOptions) bool {
 	for _, v := range excludePlugins {
 		excludePluginMap[v] = true
 	}
+
+	includePlugins := config.GetConfig().Plugin.Include.GetListStringResult()
+	includePluginMap := make(map[string]bool, len(includePlugins))
+	for _, v := range includePlugins {
+		includePluginMap[v] = true
+	}
+
 	for _, ins := range instruments {
 		// exclude the plugin at the compile phase if it's ignored
 		if excludePluginMap[ins.Name()] {
 			logrus.Infof("plugin is exclude: %s", ins.Name())
+			continue
+		}
+		if len(includePluginMap) > 0 && !includePluginMap[ins.Name()] {
+			logrus.Infof("plugin is not include: %s", ins.Name())
 			continue
 		}
 		// must have the same base package prefix
