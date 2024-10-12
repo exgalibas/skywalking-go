@@ -59,7 +59,7 @@ func (h *ContextInterceptor) BeforeInvoke(invocation operator.Invocation) error 
 	// 记录请求入参
 	raw, _ := context.GetRawData()
 	context.Request.Body = io.NopCloser(bytes.NewBuffer(raw))
-	s.Log("请求参数", string(limit(raw, 1024*2)))
+	s.Log("请求参数", string(Limit(raw, 1024*2)))
 
 	// 记录响应结果
 	context.Writer = CustomWriter{

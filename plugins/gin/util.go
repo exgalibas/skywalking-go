@@ -1,6 +1,6 @@
 package gin
 
-func limit(in []byte, limit uint) []byte {
+func Limit(in []byte, limit uint) []byte {
 	l := uint(len(in))
 	if l <= limit {
 		return in
