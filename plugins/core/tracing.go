@@ -288,6 +288,9 @@ func (t *Tracer) createSpan0(ctx *TracingContext, parent TracingSpan, pluginOpts
 	for _, opt := range coreOpts {
 		opt.(tracing.SpanOption).Apply(ds)
 	}
+	if parentSpan == nil && ds.GetComponent() != 5006 {
+		return newNoopSpan(), true, nil
+	}
 	s, err = NewSegmentSpan(ctx, ds, parentSpan)
 	if err != nil {
 		return nil, false, err
