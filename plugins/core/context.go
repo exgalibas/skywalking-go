@@ -36,6 +36,7 @@ type TracingContext struct {
 	activeSpan TracingSpan
 	Runtime    *RuntimeContext
 	ID         *IDContext
+	Ignore     bool
 }
 
 func (t *TracingContext) TakeSnapShot(val interface{}) interface{} {
@@ -73,6 +74,12 @@ func NewTracingContext() *TracingContext {
 		},
 		ID: NewIDContext(true),
 	}
+}
+
+func NewNoTracingContext() *TracingContext {
+	ctx := NewTracingContext()
+	ctx.Ignore = true
+	return ctx
 }
 
 func (r *RuntimeContext) clone() *RuntimeContext {

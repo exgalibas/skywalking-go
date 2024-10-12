@@ -45,6 +45,9 @@ func (t *Tracer) DebugStack() []byte {
 func (t *Tracer) CreateEntrySpan(operationName string, extractor interface{}, opts ...interface{}) (s interface{}, err error) {
 	ctx, tracingSpan, noop := t.createNoop(operationName)
 	if noop {
+		if ctx != nil {
+			SetGLS(ctx)
+		}
 		return tracingSpan, nil
 	}
 	defer func() {
@@ -70,6 +73,9 @@ func (t *Tracer) CreateEntrySpan(operationName string, extractor interface{}, op
 func (t *Tracer) CreateLocalSpan(operationName string, opts ...interface{}) (s interface{}, err error) {
 	ctx, tracingSpan, noop := t.createNoop(operationName)
 	if noop {
+		if ctx != nil {
+			SetGLS(ctx)
+		}
 		return tracingSpan, nil
 	}
 	defer func() {
@@ -83,6 +89,9 @@ func (t *Tracer) CreateLocalSpan(operationName string, opts ...interface{}) (s i
 func (t *Tracer) CreateExitSpan(operationName, peer string, injector interface{}, opts ...interface{}) (s interface{}, err error) {
 	ctx, tracingSpan, noop := t.createNoop(operationName)
 	if noop {
+		if ctx != nil {
+			SetGLS(ctx)
+		}
 		return tracingSpan, nil
 	}
 	defer func() {
@@ -236,10 +245,13 @@ func (t *Tracer) createNoop(operationName string) (*TracingContext, TracingSpan,
 		return nil, newNoopSpan(), true
 	}
 	if tracerIgnore(operationName, t.ignoreSuffix, t.traceIgnorePath) {
-		return nil, newNoopSpan(), true
+		return NewNoTracingContext(), newNoopSpan(), true
 	}
 	ctx := getTracingContext()
 	if ctx != nil {
+		if ctx.Ignore {
+			return nil, newNoopSpan(), true
+		}
 		span := ctx.ActiveSpan()
 		noop, ok := span.(*NoopSpan)
 		if ok {
