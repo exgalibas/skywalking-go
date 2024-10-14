@@ -40,7 +40,8 @@ func (h *ContextInterceptor) BeforeInvoke(invocation operator.Invocation) error 
 	if fullPath == "" {
 		fullPath = context.Request.URL.Path
 	}
-	tracing.SetCorrelationContextValue("need_root", "0")
+	tracing.SetRuntimeContextValue("can_root", struct{}{})
+	defer tracing.SetRuntimeContextValue("can_root", nil)
 	s, err := tracing.CreateEntrySpan(
 		fmt.Sprintf("%s:%s", context.Request.Method, fullPath), func(headerKey string) (string, error) {
 			return context.Request.Header.Get(headerKey), nil

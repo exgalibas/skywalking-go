@@ -273,8 +273,6 @@ func (t *Tracer) createSpan0(ctx *TracingContext, parent TracingSpan, pluginOpts
 		if ok {
 			parentSpan = tmpSpan
 		}
-	} else if t.GetCorrelationContextValue("need_root") != "0" {
-		return newNoopSpan(), true, nil
 	}
 	isForceSample := len(ds.Refs) > 0
 	// Try to sample when it is not force sample
@@ -293,6 +291,9 @@ func (t *Tracer) createSpan0(ctx *TracingContext, parent TracingSpan, pluginOpts
 	s, err = NewSegmentSpan(ctx, ds, parentSpan)
 	if err != nil {
 		return nil, false, err
+	}
+	if s == nil {
+		return newNoopSpan(), true, nil
 	}
 	// process the opts from plugin, split opts because the DefaultSpan not contains the tracing context information(AdaptSpan)
 	for _, opt := range pluginOpts {

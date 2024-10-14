@@ -36,6 +36,9 @@ func NewSegmentSpan(ctx *TracingContext, defaultSpan *DefaultSpan, parentSpan Se
 		return nil, err
 	}
 	if parentSpan == nil || !parentSpan.segmentRegister() {
+		if ctx.RuntimeContext().Get("can_root") == nil {
+			return nil, nil
+		}
 		rs := newSegmentRoot(ssi)
 		err = rs.createRootSegmentContext(ctx, parentSpan)
 		if err != nil {
