@@ -273,6 +273,8 @@ func (t *Tracer) createSpan0(ctx *TracingContext, parent TracingSpan, pluginOpts
 		if ok {
 			parentSpan = tmpSpan
 		}
+	} else if t.GetCorrelationContextValue("need_root") != "0" {
+		return newNoopSpan(), true, nil
 	}
 	isForceSample := len(ds.Refs) > 0
 	// Try to sample when it is not force sample
@@ -287,9 +289,6 @@ func (t *Tracer) createSpan0(ctx *TracingContext, parent TracingSpan, pluginOpts
 	// process the opts from agent core for prepare building segment span
 	for _, opt := range coreOpts {
 		opt.(tracing.SpanOption).Apply(ds)
-	}
-	if parentSpan == nil && ds.GetComponent() != 5006 {
-		return newNoopSpan(), true, nil
 	}
 	s, err = NewSegmentSpan(ctx, ds, parentSpan)
 	if err != nil {
