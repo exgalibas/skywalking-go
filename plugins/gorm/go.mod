@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.29.0
-	github.com/apache/skywalking-go/plugins/core v0.0.0-20241010090250-3981a26a05db
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/stretchr/testify v1.9.0

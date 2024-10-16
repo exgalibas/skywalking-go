@@ -1,4 +1,4 @@
-package redis
+package redigo
 
 import (
 	"embed"
@@ -31,14 +31,12 @@ func (i *Instrument) VersionChecker(version string) bool {
 func (i *Instrument) Points() []*instrument.Point {
 	return []*instrument.Point{
 		{
+			PackageName: "redis",
 			PackagePath: "",
-			At:          instrument.NewStructEnhance("activeConn"),
+			At:          instrument.NewStructEnhance("Conn"),
 		},
 		{
-			PackagePath: "",
-			At:          instrument.NewStructEnhance("errorConn"),
-		},
-		{
+			PackageName: "redis",
 			PackagePath: "",
 			At: instrument.NewMethodEnhance("*activeConn", "Do",
 				instrument.WithArgType(0, "string"),
@@ -48,6 +46,7 @@ func (i *Instrument) Points() []*instrument.Point {
 			Interceptor: "DoInterceptor",
 		},
 		{
+			PackageName: "redis",
 			PackagePath: "",
 			At: instrument.NewMethodEnhance("*errorConn", "Do",
 				instrument.WithArgType(0, "string"),
@@ -56,6 +55,7 @@ func (i *Instrument) Points() []*instrument.Point {
 			Interceptor: "DoInterceptor",
 		},
 		{
+			PackageName: "redis",
 			PackagePath: "",
 			At: instrument.NewStaticMethodEnhance("Dial",
 				instrument.WithArgType(0, "string"),
@@ -67,10 +67,6 @@ func (i *Instrument) Points() []*instrument.Point {
 			Interceptor: "DialInterceptor",
 		},
 	}
-}
-
-func (i *Instrument) PluginSourceCodePath() string {
-	return "redis"
 }
 
 func (i *Instrument) FS() *embed.FS {

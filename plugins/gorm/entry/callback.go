@@ -18,7 +18,6 @@
 package entry
 
 import (
-	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"strings"
@@ -65,7 +64,7 @@ func afterCallback(dbInfo DatabaseInfo) func(db *gorm.DB) {
 		span.Tag(tracing.TagDBStatement, sql)
 		err := db.Statement.Error
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) || strings.Contains(err.Error(), "context canceled") {
+			if err == gorm.ErrRecordNotFound || strings.Contains(err.Error(), "context canceled") {
 				span.Log(err.Error())
 			} else {
 				span.Error(err.Error())

@@ -41,6 +41,7 @@ import (
 	"github.com/apache/skywalking-go/plugins/mongo"
 	"github.com/apache/skywalking-go/plugins/mux"
 	"github.com/apache/skywalking-go/plugins/pulsar"
+	"github.com/apache/skywalking-go/plugins/redigo"
 	"github.com/apache/skywalking-go/plugins/rocketmq"
 	runtime_metrics "github.com/apache/skywalking-go/plugins/runtimemetrics"
 	segmentiokafka "github.com/apache/skywalking-go/plugins/segmentio-kafka"
@@ -71,6 +72,7 @@ func init() {
 	registerFramework(pulsar.NewInstrument())
 	registerFramework(segmentiokafka.NewInstrument())
 	registerFramework(goelasticsearchv8.NewInstrument())
+	registerFramework(redigo.NewInstrument())
 
 	// fasthttp related instruments
 	registerFramework(fasthttp_client.NewInstrument())
