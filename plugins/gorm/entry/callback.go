@@ -18,9 +18,10 @@
 package entry
 
 import (
+	"errors"
 	"fmt"
-
 	"gorm.io/gorm"
+	"strings"
 
 	"github.com/apache/skywalking-go/plugins/core/tracing"
 )
@@ -62,8 +63,13 @@ func afterCallback(dbInfo DatabaseInfo) func(db *gorm.DB) {
 			sql = db.Dialector.Explain(sql, db.Statement.Vars...)
 		}
 		span.Tag(tracing.TagDBStatement, sql)
-		if db.Statement.Error != nil {
-			span.Error(db.Statement.Error.Error())
+		err := db.Statement.Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) || strings.Contains(err.Error(), "context canceled") {
+				span.Log(err.Error())
+			} else {
+				span.Error(err.Error())
+			}
 		}
 	}
 }
