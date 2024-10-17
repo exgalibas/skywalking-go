@@ -1,4 +1,4 @@
-package redigo
+package redis
 
 type DatabaseInfo struct {
 	Network string

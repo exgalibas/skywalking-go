@@ -31,13 +31,13 @@ func (i *Instrument) VersionChecker(version string) bool {
 func (i *Instrument) Points() []*instrument.Point {
 	return []*instrument.Point{
 		{
-			PackageName: "redis",
-			PackagePath: "",
-			At:          instrument.NewStructEnhance("Conn"),
+			PackageName: "",
+			PackagePath: "redis",
+			At:          instrument.NewStructEnhance("conn"),
 		},
 		{
-			PackageName: "redis",
-			PackagePath: "",
+			PackageName: "",
+			PackagePath: "redis",
 			At: instrument.NewMethodEnhance("*activeConn", "Do",
 				instrument.WithArgType(0, "string"),
 				instrument.WithResultCount(2),
@@ -46,8 +46,8 @@ func (i *Instrument) Points() []*instrument.Point {
 			Interceptor: "DoInterceptor",
 		},
 		{
-			PackageName: "redis",
-			PackagePath: "",
+			PackageName: "",
+			PackagePath: "redis",
 			At: instrument.NewMethodEnhance("*errorConn", "Do",
 				instrument.WithArgType(0, "string"),
 				instrument.WithResultCount(2),
@@ -55,15 +55,14 @@ func (i *Instrument) Points() []*instrument.Point {
 			Interceptor: "DoInterceptor",
 		},
 		{
-			PackageName: "redis",
-			PackagePath: "",
+			PackageName: "",
+			PackagePath: "redis",
 			At: instrument.NewStaticMethodEnhance("Dial",
 				instrument.WithArgType(0, "string"),
 				instrument.WithArgType(1, "string"),
 				instrument.WithResultCount(2),
 				instrument.WithResultType(0, "Conn"),
-				instrument.WithResultType(1, "error"),
-			),
+				instrument.WithResultType(1, "error")),
 			Interceptor: "DialInterceptor",
 		},
 	}
