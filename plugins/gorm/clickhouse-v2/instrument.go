@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package mysql
+package clickhousev2
 
 import (
 	"embed"
@@ -26,7 +26,7 @@ import (
 //go:embed *
 var fs embed.FS
 
-const mysqlName = "mysql"
+const clickhouseName = "clickhouse-v2"
 
 //skywalking:nocopy
 type Instrument struct {
@@ -41,7 +41,7 @@ func (i *Instrument) Name() string {
 }
 
 func (i *Instrument) BasePackage() string {
-	return "gorm.io/driver/mysql"
+	return "github.com/ClickHouse/clickhouse-go/v2"
 }
 
 func (i *Instrument) VersionChecker(version string) bool {
@@ -52,23 +52,17 @@ func (i *Instrument) Points() []*instrument.Point {
 	return []*instrument.Point{
 		{
 			PackagePath: "",
-			At: instrument.NewStaticMethodEnhance("Open",
-				instrument.WithArgsCount(1), instrument.WithArgType(0, "string"),
-				instrument.WithResultCount(1), instrument.WithResultType(0, "gorm.Dialector")),
-			Interceptor: "InstanceInterceptor",
-		},
-		{
-			PackagePath: "",
-			At: instrument.NewStaticMethodEnhance("New",
-				instrument.WithArgsCount(1), instrument.WithArgType(0, "Config"),
-				instrument.WithResultCount(1), instrument.WithResultType(0, "gorm.Dialector")),
+			PackageName: "clickhouse",
+			At: instrument.NewStaticMethodEnhance("OpenDB",
+				instrument.WithArgsCount(1), instrument.WithArgType(0, "*Options"),
+				instrument.WithResultCount(1), instrument.WithResultType(0, "*sql.DB")),
 			Interceptor: "InstanceInterceptor",
 		},
 	}
 }
 
 func (i *Instrument) PluginSourceCodePath() string {
-	return mysqlName
+	return clickhouseName
 }
 
 func (i *Instrument) FS() *embed.FS {

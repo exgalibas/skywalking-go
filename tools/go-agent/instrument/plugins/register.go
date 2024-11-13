@@ -31,8 +31,12 @@ import (
 	goredisv9 "github.com/apache/skywalking-go/plugins/go-redisv9"
 	"github.com/apache/skywalking-go/plugins/go-restfulv3"
 	"github.com/apache/skywalking-go/plugins/goframe"
+	gorm_clickhouse "github.com/apache/skywalking-go/plugins/gorm/clickhouse"
+	gorm_clickhousev2 "github.com/apache/skywalking-go/plugins/gorm/clickhouse-v2"
 	gorm_entry "github.com/apache/skywalking-go/plugins/gorm/entry"
 	gorm_mysql "github.com/apache/skywalking-go/plugins/gorm/mysql"
+	gorm_postgres "github.com/apache/skywalking-go/plugins/gorm/postgres"
+	gorm_sql "github.com/apache/skywalking-go/plugins/gorm/sql"
 	"github.com/apache/skywalking-go/plugins/grpc"
 	"github.com/apache/skywalking-go/plugins/http"
 	"github.com/apache/skywalking-go/plugins/irisv12"
@@ -81,8 +85,10 @@ func init() {
 	// gorm related instruments
 	registerFramework(gorm_entry.NewInstrument())
 	registerFramework(gorm_mysql.NewInstrument())
-	//registerFramework(gorm_clickhouse.NewInstrument())
-	//registerFramework(gorm_postgres.NewInstrument())
+	registerFramework(gorm_sql.NewInstrument())
+	registerFramework(gorm_clickhousev2.NewInstrument())
+	registerFramework(gorm_clickhouse.NewInstrument())
+	registerFramework(gorm_postgres.NewInstrument())
 
 	// sql related instruments
 	registerFramework(sql_entry.NewInstrument())

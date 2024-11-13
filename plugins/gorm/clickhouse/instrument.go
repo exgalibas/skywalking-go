@@ -64,11 +64,6 @@ func (i *Instrument) Points() []*instrument.Point {
 				instrument.WithResultCount(1), instrument.WithResultType(0, "gorm.Dialector")),
 			Interceptor: "InstanceInterceptor",
 		},
-		{
-			PackagePath: "",
-			At: instrument.NewStructEnhance("Dialector",
-				instrument.WithFiledType("", "*Config")),
-		},
 	}
 }
 

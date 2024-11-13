@@ -69,14 +69,13 @@ func (i *OpenInterceptor) setupDatabaseInfo(db *gorm.DB) DatabaseInfo {
 	if db.Config == nil || db.Config.Dialector == nil {
 		return nil
 	}
-	ins, ok := db.Config.Dialector.(operator.EnhancedInstance)
+	ins, ok := db.Config.Dialector.(DialWrapper)
+	if !ok || ins == nil {
+		return nil
+	}
+	data, ok := ins.DataInfo().(DatabaseInfo)
 	if !ok {
 		return nil
 	}
-	dbInfo, ok := ins.GetSkyWalkingDynamicField().(DatabaseInfo)
-	if !ok || dbInfo == nil {
-		return nil
-	}
-
-	return dbInfo
+	return data
 }

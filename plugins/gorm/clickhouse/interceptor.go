@@ -32,10 +32,24 @@ func (i *InstanceInterceptor) BeforeInvoke(invocation operator.Invocation) error
 }
 
 func (i *InstanceInterceptor) AfterInvoke(invocation operator.Invocation, result ...interface{}) error {
-	if res, ok := result[0].(*clickhouse.Dialector); ok && res != nil && res.Config != nil && res.Config.DSN != "" {
-		dbInfo := i.buildDBInfo(res)
-		if caller, ok := result[0].(operator.EnhancedInstance); ok && dbInfo != nil {
-			caller.SetSkyWalkingDynamicField(dbInfo)
+	if res, ok := result[0].(*clickhouse.Dialector); ok && res != nil && res.Config != nil {
+		var data *DatabaseInfo
+		if res.Config.DSN != "" {
+			data = i.buildDBInfo(res)
+		} else if res.Config.Conn != nil {
+			if conn, ok := res.Config.Conn.(operator.EnhancedInstance); ok && conn != nil {
+				if addr, ok := conn.GetSkyWalkingDynamicField().([]string); ok && len(addr) > 0 {
+					data = &DatabaseInfo{
+						PeerAddress: strings.Join(addr, "/"),
+					}
+				}
+			}
+		}
+		if data != nil {
+			invocation.DefineReturnValues(&DialWrapper{
+				Data:      data,
+				Dialector: res,
+			})
 		}
 	}
 	return nil
@@ -48,6 +62,15 @@ func (i *InstanceInterceptor) buildDBInfo(dial *clickhouse.Dialector) *DatabaseI
 		return nil
 	}
 	return &DatabaseInfo{PeerAddress: strings.Join(cfg.Addr, `/`)}
+}
+
+type DialWrapper struct {
+	Data *DatabaseInfo
+	*clickhouse.Dialector
+}
+
+func (dial *DialWrapper) DataInfo() interface{} {
+	return dial.Data
 }
 
 type DatabaseInfo struct {

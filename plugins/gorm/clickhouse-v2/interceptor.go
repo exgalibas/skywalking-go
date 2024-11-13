@@ -15,12 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package mysql
+package clickhousev2
 
 import (
-	driver "github.com/go-sql-driver/mysql"
-	"gorm.io/driver/mysql"
-
+	drive "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/apache/skywalking-go/plugins/core/operator"
 )
 
@@ -28,53 +26,20 @@ type InstanceInterceptor struct {
 }
 
 func (i *InstanceInterceptor) BeforeInvoke(invocation operator.Invocation) error {
+	args := invocation.Args()
+	if len(args) > 0 {
+		if op, ok := args[0].(*drive.Options); ok && op != nil {
+			invocation.SetContext(op.Addr)
+		}
+	}
 	return nil
 }
 
 func (i *InstanceInterceptor) AfterInvoke(invocation operator.Invocation, result ...interface{}) error {
-	if res, ok := result[0].(*mysql.Dialector); ok && res != nil && res.Config != nil && res.Config.DSN != "" {
-		data := i.buildDBInfo(res)
-		if data == nil {
-			return nil
+	if res, ok := result[0].(operator.EnhancedInstance); ok && res != nil {
+		if addr, ok := invocation.GetContext().([]string); ok && len(addr) > 0 {
+			res.SetSkyWalkingDynamicField(addr)
 		}
-		invocation.DefineReturnValues(&DialWrapper{
-			Data:      data,
-			Dialector: res,
-		})
 	}
 	return nil
-}
-
-func (i *InstanceInterceptor) buildDBInfo(dial *mysql.Dialector) *DatabaseInfo {
-	cfg, err := driver.ParseDSN(dial.Config.DSN)
-	if err != nil {
-		// ignore the db info if parse dsn failed
-		return nil
-	}
-	return &DatabaseInfo{PeerAddress: cfg.Addr}
-}
-
-type DialWrapper struct {
-	Data *DatabaseInfo
-	*mysql.Dialector
-}
-
-func (dial *DialWrapper) DataInfo() interface{} {
-	return dial.Data
-}
-
-type DatabaseInfo struct {
-	PeerAddress string
-}
-
-func (d *DatabaseInfo) Type() string {
-	return "mysql"
-}
-
-func (d *DatabaseInfo) ComponentID() int32 {
-	return 5012
-}
-
-func (d *DatabaseInfo) Peer() string {
-	return d.PeerAddress
 }

@@ -33,10 +33,14 @@ func (i *InstanceInterceptor) BeforeInvoke(invocation operator.Invocation) error
 
 func (i *InstanceInterceptor) AfterInvoke(invocation operator.Invocation, result ...interface{}) error {
 	if res, ok := result[0].(*postgres.Dialector); ok && res != nil && res.Config != nil && res.Config.DSN != "" {
-		dbInfo := i.buildDBInfo(res)
-		if caller, ok := result[0].(operator.EnhancedInstance); ok && dbInfo != nil {
-			caller.SetSkyWalkingDynamicField(dbInfo)
+		data := i.buildDBInfo(res)
+		if data == nil {
+			return nil
 		}
+		invocation.DefineReturnValues(&DialWrapper{
+			Data:      data,
+			Dialector: res,
+		})
 	}
 	return nil
 }
@@ -49,6 +53,15 @@ func (i *InstanceInterceptor) buildDBInfo(dial *postgres.Dialector) *DatabaseInf
 	}
 	_, addr := pgconn.NetworkAddress(cfg.Host, cfg.Port)
 	return &DatabaseInfo{PeerAddress: addr}
+}
+
+type DialWrapper struct {
+	Data *DatabaseInfo
+	*postgres.Dialector
+}
+
+func (dial *DialWrapper) DataInfo() interface{} {
+	return dial.Data
 }
 
 type DatabaseInfo struct {
